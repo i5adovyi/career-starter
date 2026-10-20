@@ -1,0 +1,15 @@
+# Every candidate's documents, preferences, activity and exported CVs stay private.
+/local/
+/dist/
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+.codex/

@@ -1,0 +1,22 @@
+{
+  "reviewer": "REPLACE_WITH_REVIEWER",
+  "summary": "Replace with what was actually reviewed and any remaining concerns.",
+  "changes": [
+    "Replace with a specific before/after wording change or a reason no change was needed."
+  ],
+  "checks": {
+    "plain_language": false,
+    "specific_evidence": false,
+    "natural_voice": false,
+    "read_aloud": false,
+    "no_invented_claims": false
+  },
+  "claim_map": [
+    {
+      "quote": "REPLACE_WITH_AN_EXACT_CONTENT_LINE_INCLUDING_HEADING_OR_BULLET_PREFIX",
+      "evidence_ids": ["E1"]
+    }
+  ],
+  "cv_sha256": "REPLACE_WITH_CV_SHA256_CAPTURED_BEFORE_FINAL_REVIEW",
+  "bundle_sha256": "REPLACE_WITH_BUNDLE_SHA256_CAPTURED_BEFORE_FINAL_REVIEW"
+}

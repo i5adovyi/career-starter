@@ -1,0 +1,29 @@
+{
+  "confirmed": false,
+  "target_roles": ["Customer Support Specialist"],
+  "locations": ["Germany"],
+  "work_modes": ["remote", "hybrid"],
+  "languages": ["English"],
+  "seniority": ["entry"],
+  "keywords": ["customer support", "customer service"],
+  "excluded_keywords": [],
+  "skills": ["Written communication"],
+  "salary": {
+    "minimum": null,
+    "currency": "EUR",
+    "period": "year"
+  },
+  "weekly_hours": 3,
+  "learning_goals": [
+    {
+      "skill": "Customer support case handling",
+      "reason": "Example only: replace with a confirmed goal supported by suitable vacancies."
+    }
+  ],
+  "sources": [
+    {"type": "arbeitnow"},
+    {"type": "remotive"}
+  ],
+  "writing_language": "English",
+  "voice_notes": "Example only: use direct, warm sentences and concrete descriptions of work."
+}
