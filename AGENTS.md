@@ -1,39 +1,90 @@
 # Career Starter — assistant instructions
 
-This is a local career workspace for one candidate. The public files contain the
-tool and its instructions. Everything about the candidate belongs in `local/`.
-Use the same workflow in Codex, Claude Code, or another assistant that can read
-these files. Do not assume a profession, seniority, country, family situation,
-language level, salary, or reason for a career break.
+## Purpose and architecture
 
-## Start here
+Career Starter is a reusable local career assistant for one candidate per project
+folder. It helps a person turn their actual experience and preferences into real
+job leads, a practical learning plan and tailored applications they can approve.
+It supports different professions, first jobs, career changes and returning to
+work. Do not assume a profession, seniority, country, family situation, language
+level, salary, or reason for a career break.
 
-Read `README.md`, run `python career.py status`, and inspect existing files in
-`local/` before creating anything. If the workspace is new, run
-`python career.py init`, then follow `workflows/onboarding.md`.
+The cycle is **confirmed CV/profile → search → learning and application
+preparation → humanization → fact review → candidate approval → export**.
+Submission remains a separate decision. The first useful outcome is a confirmed
+profile, an honest shortlist or explanation of source limits, and a feasible
+next task; an application does not have to wait for completion of a learning plan.
 
-Candidates can also complete onboarding in the portal: upload or paste a CV,
-answer four steps, confirm their text and preferences, then start a search.
-Inspect the existing profile and evidence before asking questions again.
-`local/onboarding-draft.json` is unconfirmed work; only the completed profile
-and evidence are candidate-confirmed. Portal evidence records candidate-provided
-claims, not independent verification or a humanisation review.
+The Python 3.10+ runtime uses only the standard library. It serves a local
+HTML/CSS/JavaScript portal at `http://127.0.0.1:8766/` and stores private state as
+JSON/Markdown/files under `local/`. There is no frontend build, database, embedded
+LLM or API key requirement. Internet is needed for live job feeds. Codex or
+Claude Code supplies conversational judgment, CV writing and semantic review.
+Both assistants and the portal use the same files.
 
-When the user says “start”, “help me find a job”, or an equivalent, carry out the
-workflow. Do not give them a long setup questionnaire or stop after a plan.
+This is an independent project. If nested in another workspace, work in the
+repository containing `career.py`; do not import another project's candidate,
+criteria, architecture or private history. Keep reusable code, documentation and
+tests free of personal information even when the Git repository is private.
+`local/` and `dist/` are excluded from Git; `PUBLIC_FILES.json` defines the
+shareable distribution.
+
+## Start every session
+
+1. Read the user's current request, [README.md](README.md) and these shared rules.
+   The Ukrainian guide is [README.uk.md](README.uk.md); [CLAUDE.md](CLAUDE.md) is
+   the Claude Code entry point, not a separate workflow.
+2. Determine whether the task is candidate assistance or product development.
+   For development, inspect `git status --short` and the relevant diff before
+   editing. Preserve work from other sessions; commits, pushes, PRs and
+   publication require an explicit request.
+3. For candidate work, run `python career.py status`, then read only the relevant
+   saved artifacts below. Use files as continuity, not assumptions about earlier
+   conversations. Do not restart onboarding or regenerate documents blindly.
+4. If there is no confirmed profile, follow [workflows/onboarding.md](workflows/onboarding.md).
+   Use `python career.py init` only if initialization is needed. Resume any saved
+   portal draft; confirmation is still required before it becomes candidate fact.
+5. For an onboarded candidate, continue the requested stage. Read source status
+   and timestamps before deciding whether a new search is useful. A read-only
+   status request does not require a live search.
+
+When the user says “start” or “help me find a job”, carry out the workflow.
+Ask only for missing decisions that materially affect it, a few questions at a
+time. For code or documentation tasks, do not inspect private candidate content
+unless it is necessary for the requested work.
+
 Start in English unless the candidate requests another language or writes in
-Ukrainian; then use their language and honor later changes. Ask only for missing
-decisions that materially change the search, a few related questions at a time.
+Ukrainian. The portal defaults to English, offers EN / УК and light/dark themes,
+and remembers those browser preferences. Learning-plan language is chosen during
+onboarding; confirm CV language separately. Switching UI language does not
+translate saved documents.
 
-The portal defaults to English and offers an EN / УК switch. It remembers the
-choice in that browser; it does not change saved documents or the profile.
-Follow the language requested in the onboarding prompt. Confirm the CV language
-separately from the conversation and learning-plan language. The English guide
-is `README.md`; the Ukrainian guide is `README.uk.md`.
+### Saved state and its meaning
 
-After onboarding, complete the first search, explain the strongest matches and
-the source limitations, and generate a realistic initial learning plan. A
-prepared application is a draft until the candidate has reviewed it.
+| Artifact under `local/` | Use and boundary |
+|---|---|
+| `onboarding-draft.json`, `imports/` | Unconfirmed answers, preserved original CV and extracted text. Resume and review before treating them as confirmed. |
+| `profile.json` | Active candidate-confirmed search and learning preferences; `profile-input.json` is an input for assistant-led onboarding, not the active profile. |
+| `master.md`, `evidence.json` | Confirmed baseline and stable claim IDs. Candidate confirmation is not independent verification. Tailor copies, not the baseline. |
+| `jobs.json`, `imported-jobs.json`, `source-cache/` | Saved leads, match reasons, source statuses and cached/imported data. Inspect freshness, `title_matches` and `review_flags`. |
+| `learning-plan.md` | Current plan and personal progress notes; preserve edits. |
+| `learning-plan.json`, `learning-plan-state.json` | Generated comparison and bookkeeping. The state points to `learning-plan.suggested*.md` when edits require a separate proposal. These files do not prove competence. |
+| `applications/JOB_ID/` | Saved job, CV draft, evidence review, version-specific approval and stage history. Preparation/export does not mean submission. |
+| `exports/` | Exported copies of approved CV versions. Keep private. |
+
+Search expands known titles through synonyms/translations in English, Ukrainian,
+German, Polish and French. Unknown roles use literal matching. Inspect the
+matched occupation and qualifiers; a title match does not prove eligibility.
+Sources are Arbeitnow, Remotive and configured Greenhouse/Lever boards, plus
+manual imports. Their coverage is partial; see [docs/SOURCES.md](docs/SOURCES.md).
+
+Learning compares CV evidence, profile skills and goals with recognized
+requirements of current review leads, excluding stale/rejected jobs. It proposes
+up to three priorities with requirement quotes, source links, exercises, outputs
+and checks within the weekly budget. Missing CV evidence stays unknown, not a
+diagnosed gap. Unrecognized specialist requirements need interpretation.
+Unedited generated plans can refresh; manual plans and edited suggestions must
+survive. Read a new suggestion before merging useful changes into personal notes.
 
 ## Facts and privacy
 
@@ -135,3 +186,42 @@ separate from private candidate data.
 Before sharing the tool, run `python career.py check-public` and create a clean
 distribution with `python career.py package`. Inspect the package content;
 never share a ZIP of the entire working directory.
+
+## Developing and verifying the tool
+
+Use the code map in [README.md](README.md#code-map) to find the responsible
+module. `career.py` resolves the workspace from its own location, not the current
+working directory: changing directories alone does not isolate a test run.
+Use the existing tests' temporary roots or a separate source copy with synthetic
+candidate data. Keep test uploads, notes and applications out of the user's
+active workspace.
+
+Choose the smallest relevant check, expanding when integration risk warrants it:
+
+| Change | Existing checks |
+|---|---|
+| Title aliases, matching, source behavior | `python -m unittest discover -s tests -p test_roles.py -v` and `test_search.py` with the same pattern option. |
+| Learning evidence, priorities, preservation | `python -m unittest discover -s tests -p test_learning.py -v`. |
+| Portal/onboarding | `python -m unittest discover -s tests -p test_portal_onboarding.py -v`, plus the changed flow in a browser using synthetic data. |
+| CLI, CV review/export, packaging | Relevant `test_cli.py`, `test_journey.py` or `test_release.py` via unittest discovery. |
+| Broad integration change | `python -m unittest discover -s tests -v`. |
+| Public code/documentation/distribution | `python career.py check-public`; inspect the diff and referenced paths. |
+
+For documentation-only edits, check command accuracy, local links, consistency
+and the public-content scan; do not run a live candidate search. New tests should
+prove behavior, preserve existing checks and use synthetic fixtures. If the
+environment blocks sockets, symlinks or temporary directories, report the actual
+limitation; use a permitted test directory/access rather than weakening checks.
+
+Preserve localhost binding, Host/Origin and CSRF checks, upload limits, safe text
+rendering, private-path confinement and CV review/approval gates. Prefer existing
+atomic write helpers and supported CLI operations for managed state. Read
+`python career.py COMMAND --help` before inventing flags.
+
+Add new public runtime, test or instruction files to `PUBLIC_FILES.json`.
+Keep README.md, README.uk.md and the relevant workflows aligned with behavior;
+keep shared assistant rules here and the Claude entry concise. A historical test
+count in `docs/VERIFICATION.md` is not evidence of a new run. At handoff, report
+what changed, checks actually performed, remaining limits, and whether any
+requested Git actions were completed. Store candidate-specific context only
+under `local/`, never in these shared instructions.

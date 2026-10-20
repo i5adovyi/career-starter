@@ -9,7 +9,7 @@ and uses the standard library. macOS and Linux were not executed in this check.
 python -m unittest discover -s tests -v
 ```
 
-57 tests: 56 passed, one skipped because this Windows environment cannot create
+85 tests: 84 passed, one skipped because this Windows environment cannot create
 symbolic links. The suite includes:
 
 - Synthetic CV import, confirmed onboarding, job import and learning-plan creation.
@@ -31,11 +31,40 @@ symbolic links. The suite includes:
   and existing CLI artifacts, stale-draft rejection and repeated completion.
 - Origin/CSRF/body-limit checks on write routes and background search persistence.
 - Ukrainian learning-plan generation and preservation of manual plan edits.
+- Multilingual title aliases, occupation boundaries and explicit seniority.
+- CV evidence and job requirements, negation, company-section exclusion,
+  learning budgets, zero-hour plans and preservation of edited suggestions.
 
 The first sandboxed test run could not connect to a loopback socket. The full
 suite passed with permission to use the local socket. No check was weakened.
 
-## Portal onboarding
+## Multilingual search and personalized learning
+
+A fresh synthetic workspace completed the portal onboarding with an English
+support/operations CV, English target roles, a Ukrainian learning preference,
+four weekly hours and no explicit learning goals. The live feeds returned
+300 Arbeitnow and 10 Remotive records. Seven review leads matched: one literal
+title match and six synonym/translation matches in the same feed snapshot,
+including German and French titles. These are review leads, not verified
+eligibility or promised coverage.
+
+The generated plan selected three topics from the found descriptions and CV:
+customer support, bookkeeping/reconciliation, and English for work. Each received
+80 minutes. It displayed the candidate's evidence, quoted requirements with
+source links, a concrete exercise, expected output and completion checks.
+Missing CV evidence remained unknown instead of becoming an asserted skill gap.
+
+After a server restart, another search refreshed the generated plan with the
+updated analysis. Browser inspection confirmed valid source URLs and the actual
+support-work sentence from the CV. A synthetic progress note was then added to
+the plan. Searching again preserved its exact SHA-256 and displayed a separate
+updated suggestion. No browser console warnings or errors were recorded.
+
+After the final coordinated-negation fix, all 28 learning and portal-onboarding
+tests passed again. Independent review also checked eight positive/negative
+requirement cases. The live check used only synthetic candidate data.
+
+## Earlier portal onboarding verification
 
 A separate synthetic workspace was exercised through the actual browser UI:
 upload DOCX, review extracted text, enter roles and location, reload and resume
@@ -120,10 +149,13 @@ not a complete accessibility audit.
 ## Product boundaries
 
 The portal conducts upload, preferences, confirmation and search without an
-embedded AI model. Codex or Claude Code can provide conversational guidance,
-interpret evidence, write the tailored CV, perform the semantic humanisation
-review and refine the learning plan. The Python `learn` command
-creates a scaffold; it does not produce a complete personalized curriculum.
+embedded AI model. Role matching now uses a curated multilingual vocabulary.
+The Python `learn` command compares CV evidence with recognized requirements
+in found job descriptions and supplies exercises, source excerpts and checks.
+Its local vocabulary and exercise library have finite coverage; specialist
+requirements remain explicit review items. Codex or Claude Code can provide
+conversational guidance, interpret evidence, write the tailored CV, perform
+the semantic humanisation review and refine the learning plan.
 The review gate checks recorded coverage and freshness; it cannot evaluate
 writing quality. There is no background search scheduler or automatic submission.
 Separate Codex and Claude Code installations were not tested; their shared

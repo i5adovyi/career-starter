@@ -18,6 +18,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
+from .roles import match_titles, title_seniority
 from .workspace import private, validate_profile
 
 MAX_BYTES = 12 * 1024 * 1024
@@ -289,11 +290,18 @@ def rank(job: dict, profile: dict) -> dict:
     result = dict(job)
     reasons, flags, rejected = [], [], []
     roles = [x for x in profile.get("target_roles", []) if str(x).strip()]
-    matches = [role for role in roles if _has(job["title"], role)]
+    matches = match_titles(job["title"], roles)
+    result["title_matches"] = matches
     if not matches:
         rejected.append("Title does not match any configured target role")
     else:
-        reasons.append("Title matches: " + ", ".join(matches))
+        exact = [match["requested_role"] for match in matches if match["kind"] == "exact"]
+        if exact:
+            reasons.append("Title matches: " + ", ".join(exact))
+        for match in matches:
+            if match["kind"] == "synonym_translation":
+                reasons.append("Title alias matches: " + match["requested_role"]
+                               + " → " + match["matched_phrase"])
     blob = job["title"] + "\n" + job["description"]
     exclusions = [word for word in profile.get("excluded_keywords", []) if _has(blob, word)]
     if exclusions:
@@ -327,10 +335,8 @@ def rank(job: dict, profile: dict) -> dict:
     flags.append("Language requirements and proficiency are unverified")
 
     levels = profile.get("seniority", [])
-    known = next((level for level in ("intern", "trainee", "junior", "middle", "senior", "lead")
-                  if _has(job["title"], level)), "")
-    aliases = {"entry": "junior", "entry level": "junior", "mid": "middle", "mid level": "middle"}
-    requested = [aliases.get(_words(level), _words(level)) for level in levels]
+    known = title_seniority(job["title"])
+    requested = [title_seniority(level) or _words(level) for level in levels]
     if levels and known and known not in requested:
         rejected.append("Explicit title seniority outside preferences: " + known)
     elif levels and not known:

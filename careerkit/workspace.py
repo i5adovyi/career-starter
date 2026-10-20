@@ -201,48 +201,6 @@ def evidence(root: Path) -> dict:
 
 
 def learn(root: Path) -> dict:
-    profile = validate_profile(read_json(private(root, "profile.json")))
-    path = private(root, "learning-plan.md")
-    if path.exists():
-        return {"path": "local/learning-plan.md", "preserved": True,
-                "next": "Ask your assistant to update priorities from job requirements and interview feedback."}
-    goals = profile["learning_goals"][:3]
-    hours = profile["weekly_hours"]
-    if profile.get("learning_language") == "uk":
-        lines = ["# План навчання", "", f"Доступний час: {hours:g} год/тиждень.", "",
-                 "Це початковий план. Уточніть його з асистентом за вимогами актуальних вакансій.",
-                 "Навчальна практика підтверджує навчання, а не професійний досвід роботи.", ""]
-        if not goals:
-            lines += ["## Перший огляд", "",
-                      "- Порівняйте 3–5 відповідних вакансій із підтвердженим досвідом.",
-                      "- Виберіть до трьох прогалин, які заважають отримати цільову роботу.",
-                      "- Для кожної визначте вправу, результат для демонстрації та критерій завершення.", ""]
-        for index, goal in enumerate(goals, 1):
-            lines += [f"## {index}. {goal['skill']}", "", f"Причина: {goal['reason']}", "",
-                      f"Час на тиждень: {hours / len(goals):g} год.",
-                      "- [ ] Узгодити практичну вправу за реальною вимогою вакансії.",
-                      "- [ ] Зберегти результат і пояснити його своїми словами.",
-                      "- [ ] Продемонструвати навичку без підказок навчального матеріалу.",
-                      "- [ ] Записати зворотний зв'язок і вибрати наступну прогалину.", ""]
-        if hours == 0:
-            lines += ["Навчання відкладене: час на нього не виділено. Зосередьтеся на вакансіях із наявними навичками.", ""]
-        write_text(path, "\n".join(lines))
-        return {"path": "local/learning-plan.md", "preserved": False}
-    lines = ["# Learning plan", "", f"Available time: {hours:g} hours/week.", "",
-             "This is a starting scaffold. Review it with your assistant against current vacancies.",
-             "Practice is evidence of learning, not professional employment.", ""]
-    if not goals:
-        lines += ["## First review", "", "- Compare 3–5 suitable job descriptions with confirmed experience.",
-                  "- Select up to three gaps that block the target role.",
-                  "- For each gap define one exercise, a demonstrable output and a completion check.", ""]
-    for index, goal in enumerate(goals, 1):
-        lines += [f"## {index}. {goal['skill']}", "", f"Reason: {goal['reason']}", "",
-                  f"Weekly budget: {hours / len(goals):g} hours.",
-                  "- [ ] Agree on one practical exercise using a relevant job requirement.",
-                  "- [ ] Save the resulting artifact and explain it in your own words.",
-                  "- [ ] Demonstrate the skill without following the tutorial.",
-                  "- [ ] Record feedback and choose the next gap.", ""]
-    if hours == 0:
-        lines += ["Learning is paused: no study time was committed. Focus on suitable roles using current skills.", ""]
-    write_text(path, "\n".join(lines))
-    return {"path": "local/learning-plan.md", "preserved": False}
+    from .learning import generate
+
+    return generate(root)

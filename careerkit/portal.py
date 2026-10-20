@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import secrets
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -36,6 +37,12 @@ def state(root: Path) -> dict:
             except (ValueError, KeyError, OSError):
                 applications.append({"id": directory.name, "stage": "needs repair"})
     plan = private(root, "learning-plan.md")
+    plan_state = read_json(private(root, "learning-plan-state.json"), {})
+    suggestion_name = re.fullmatch(
+        r"local/(learning-plan\.suggested(?:-[a-f0-9]+)?\.md)",
+        plan_state.get("suggestion_path", ""),
+    )
+    suggestion = private(root, suggestion_name[1]) if suggestion_name else None
     return {
         "onboarded": bool(profile.get("confirmed")),
         "target_roles": profile.get("target_roles", []),
@@ -44,6 +51,9 @@ def state(root: Path) -> dict:
         "search_status": market.get("status", "not_started"),
         "searched_at": market.get("searched_at"), "applications": applications,
         "learning_plan": plan.read_text(encoding="utf-8") if plan.exists() else "",
+        "learning_plan_suggestion": (
+            suggestion.read_text(encoding="utf-8") if suggestion and suggestion.exists() else ""
+        ),
     }
 
 
@@ -83,6 +93,7 @@ button:hover{background:var(--button-hover)}a{color:var(--link)}code{background:
 .theme-sun{display:none}:root[data-theme="dark"] .theme-sun{display:block}:root[data-theme="dark"] .theme-moon{display:none}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
 pre{white-space:pre-wrap;line-height:1.6;overflow-wrap:anywhere;font:14px/1.7 system-ui,sans-serif}
+.learning-plan{line-height:1.65;overflow-wrap:anywhere}.learning-plan h3{margin-top:24px}.learning-plan p{white-space:pre-wrap}.learning-plan li{margin:8px 0}
 .section{margin-top:32px}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 input{padding:10px;border:1px solid var(--control-border);border-radius:8px;min-width:240px;background:var(--surface);color:var(--text)}
 input::placeholder{color:var(--muted);opacity:1}
@@ -197,7 +208,10 @@ footer{margin:32px 0;color:var(--muted);font-size:13px}
 <section class="section"><div class="row"><h2 data-i18n="jobs">Jobs</h2><input id="filter" aria-label="Filter jobs" placeholder="Job title or company" data-i18n-label="filterLabel" data-i18n-placeholder="filterPlaceholder"></div>
 <p class="muted" data-i18n="matchNote">A keyword match is a reason to review a job. Check its terms, country, work authorization and availability.</p><div class="list" id="jobs"></div></section>
 <section class="section"><h2 data-i18n="applications">Application preparation</h2><div class="list" id="applications"></div></section>
-<section class="section"><h2 data-i18n="learning">Learning plan</h2><pre class="card" id="plan"></pre></section>
+<section class="section"><h2 data-i18n="learning">Learning plan</h2><div class="card learning-plan" id="plan"></div>
+<details id="plan-suggestion" hidden><summary data-i18n="planSuggestion">Updated plan to review</summary>
+<p class="muted" data-i18n="planPreserved">Your existing plan and notes are preserved. Review this suggestion with your assistant before replacing them.</p>
+<div class="card learning-plan" id="suggested-plan"></div></details></section>
 </div>
 <footer data-i18n="footer">Your data stays in local/. Use Codex / Claude Code or the CLI for actions. This page does not submit applications.
 Text read by your assistant is processed according to its provider settings.</footer>
@@ -251,13 +265,13 @@ const ukrainianSignals={
  'Salary is unknown or not comparable; no currency or period conversion assumed':'Зарплата невідома або непорівнювана; валюту й період не перераховано',
  'Source failed; retained from an earlier run, availability unverified':'Джерело недоступне; збережено попередній результат, актуальність не перевірено'
 };
-const ukrainianPrefixes={'Title matches: ':'Збіг назви: ','Keywords found: ':'Знайдені ключові слова: ','Location text matches: ':'Збіг локації: '};
+const ukrainianPrefixes={'Title matches: ':'Збіг назви: ','Title alias matches: ':'Збіг за синонімом або перекладом: ','Keywords found: ':'Знайдені ключові слова: ','Location text matches: ':'Збіг локації: '};
 Object.assign(messages.en,{
  onboardingLabel:'Onboarding',stepCV:'Your CV',stepWork:'Your next role',stepLearn:'Skills & learning',stepReview:'Review & search',
  cvTitle:"Let's start with your experience",cvIntro:'Upload your CV, or paste a description of your work, education and projects. You can edit the text before confirming it.',
  uploadCV:'Upload your CV',fileHelp:'PDF, DOCX, TXT or Markdown · up to 20 MiB · stored on this computer',cvText:'Your CV text',cvPlaceholder:'Paste or review your experience here…',
  cvHelp:'Check names, dates and responsibilities. Fix extraction errors and remove anything you do not want to use.',
- workTitle:'What would you like to do next?',workIntro:'Choose roles you would consider now. Use titles that employers use in their job listings.',
+ workTitle:'What would you like to do next?',workIntro:'Choose roles you would consider now. Search also checks known synonyms and translated titles in English, Ukrainian, German, Polish and French.',
  targetRoles:'Target job titles',rolesPlaceholder:'e.g. Customer Support, Office Administrator',listHelp:'Separate items with commas or new lines.',
  locationsLabel:'Countries or cities',locationsPlaceholder:'e.g. Poland, Warsaw',locationHelp:'Remote jobs may still have country restrictions. We will flag unverified eligibility.',
  workModes:'Working arrangement',remote:'Remote',hybrid:'Hybrid',onsite:'On site',morePreferences:'More preferences (optional)',
@@ -266,7 +280,7 @@ Object.assign(messages.en,{
  learnTitle:'Build on what you already know',learnIntro:'Share your current skills and a realistic study budget. Unlisted skills will stay unknown, not be treated as missing.',
  skillsLabel:'Skills you already use (optional)',languagesLabel:'Languages you can work in (optional)',languagesPlaceholder:'e.g. English, Ukrainian',
  hoursLabel:'Hours per week for learning',hoursHelp:'Zero is fine — focus on jobs using your current skills.',planLanguage:'Learning-plan language',
- goalsLabel:'What would you like to learn? (optional)',goalsHelp:'Up to three topics, one per line. Your assistant can refine the plan after reviewing vacancies.',
+ goalsLabel:'What would you like to learn? (optional)',goalsHelp:'Up to three topics, one per line. Your plan will compare your CV with the requirements of found jobs, even if you leave this blank.',
  reviewTitle:'Check your profile, then find jobs',reviewIntro:'Your answers will become your local profile. Go back to change anything before confirming.',
  reviewCV:'Review your CV text',feedsHelp:'A starting selection of public European and remote listings, not the whole market. Your CV is not sent to these sources.',
  otherSources:'Other saved sources kept: ',
@@ -282,7 +296,8 @@ Object.assign(messages.en,{
  searchEmpty:'No matching jobs yet. You can retry later or ask your assistant to review your criteria and add other sources.',
  searchReady:'Review the jobs below with your assistant. Check location, eligibility and requirements before applying.',
  searchNotStarted:'Your profile is ready. Start a search when you are ready.',
- noPlan:'Your first search creates a learning-plan starting point. Your assistant can refine the exercises and completion criteria.',
+ noPlan:'Your first search builds a plan from your CV, learning priorities and the requirements of found jobs.',
+ planSuggestion:'Updated plan to review',planPreserved:'Your existing plan and notes are preserved. Review this suggestion with your assistant before replacing them.',
  welcome:'A new chapter starts here',onboarding:'Four short steps: add your CV, choose your next role, set your learning priorities and find real job leads.',
  footer:'Your CV and answers are stored in local/ on this computer. Public job searches do not send your CV. Use your assistant to tailor CVs and refine the learning plan. This portal does not submit applications.'
 });
@@ -291,7 +306,7 @@ Object.assign(messages.uk,{
  cvTitle:'Почнімо з твого досвіду',cvIntro:'Завантаж CV або встав опис роботи, освіти та проєктів. Перед підтвердженням текст можна відредагувати.',
  uploadCV:'Завантаж своє CV',fileHelp:'PDF, DOCX, TXT або Markdown · до 20 МіБ · зберігається на цьому комп’ютері',cvText:'Текст твого CV',cvPlaceholder:'Встав або перевір свій досвід тут…',
  cvHelp:'Перевір імена, дати й обов’язки. Виправ помилки розпізнавання та прибери зайві подробиці.',
- workTitle:'Яку роботу ти хочеш знайти?',workIntro:'Обери ролі, які готовий або готова розглядати зараз. Використовуй назви посад із вакансій роботодавців.',
+ workTitle:'Яку роботу ти хочеш знайти?',workIntro:'Обери ролі, які готовий або готова розглядати зараз. Пошук враховує відомі синоніми й переклади назв англійською, українською, німецькою, польською та французькою.',
  targetRoles:'Бажані посади',rolesPlaceholder:'Наприклад: Customer Support, Office Administrator',listHelp:'Розділяй значення комами або новими рядками.',
  locationsLabel:'Країни або міста',locationsPlaceholder:'Наприклад: Poland, Warsaw',locationHelp:'Дистанційна робота теж може мати обмеження за країною. Невідомі умови будуть позначені для перевірки.',
  workModes:'Формат роботи',remote:'Дистанційно',hybrid:'Гібридно',onsite:'В офісі',morePreferences:'Додаткові побажання (необов’язково)',
@@ -300,7 +315,7 @@ Object.assign(messages.uk,{
  learnTitle:'Спираймося на те, що ти вже вмієш',learnIntro:'Вкажи наявні навички й реалістичний час на навчання. Невказана навичка залишиться невідомою — це не означає, що її немає.',
  skillsLabel:'Навички, які вже використовуєш (необов’язково)',languagesLabel:'Мови для роботи (необов’язково)',languagesPlaceholder:'Наприклад: English, Ukrainian',
  hoursLabel:'Годин на навчання щотижня',hoursHelp:'Можна вказати нуль і зосередитися на роботі з наявними навичками.',planLanguage:'Мова навчального плану',
- goalsLabel:'Чого хочеш навчитися? (необов’язково)',goalsHelp:'До трьох тем, кожна з нового рядка. Асистент уточнить план після перегляду вакансій.',
+ goalsLabel:'Чого хочеш навчитися? (необов’язково)',goalsHelp:'До трьох тем, кожна з нового рядка. План порівняє твоє CV з вимогами знайдених вакансій, навіть якщо залишити це поле порожнім.',
  reviewTitle:'Перевір профіль і знайди вакансії',reviewIntro:'Відповіді стануть твоїм локальним профілем. Повернися назад, якщо потрібно щось змінити.',
  reviewCV:'Переглянути текст CV',feedsHelp:'Початкова добірка публічних європейських і дистанційних вакансій, а не весь ринок. Твоє CV не надсилається цим джерелам.',
  otherSources:'Інші збережені джерела: ',
@@ -316,7 +331,8 @@ Object.assign(messages.uk,{
  searchEmpty:'Відповідних вакансій поки немає. Спробуй пізніше або попроси асистента переглянути критерії та додати інші джерела.',
  searchReady:'Переглянь вакансії нижче разом з асистентом. Перед подачею перевір локацію, право на роботу та вимоги.',
  searchNotStarted:'Профіль готовий. Можна починати пошук.',
- noPlan:'Перший пошук створить основу навчального плану. Асистент допоможе уточнити вправи та критерії виконання.',
+ noPlan:'Перший пошук створить план на основі CV, навчальних пріоритетів і вимог знайдених вакансій.',
+ planSuggestion:'Оновлений план для перегляду',planPreserved:'Твій поточний план і нотатки збережено. Переглянь цю пропозицію з асистентом перед заміною.',
  welcome:'Тут починається новий етап',onboarding:'Чотири короткі кроки: додай CV, обери бажану роботу, визнач пріоритети навчання та знайди реальні вакансії.',
  footer:'CV та відповіді зберігаються в local/ на цьому комп’ютері. Публічний пошук не передає твоє CV джерелам вакансій. Асистент допоможе адаптувати CV й уточнити навчальний план. Портал не надсилає заявки.'
 });
@@ -335,6 +351,29 @@ function signal(text){
   if(text.startsWith(prefix))return translation+text.slice(prefix.length);
  }
  return text;
+}
+function renderPlan(target,text){
+ target.replaceChildren();let list=null;
+ for(const line of text.split('\n')){
+  if(!line.trim()){list=null;continue;}
+  const heading=line.match(/^#{1,3} (.+)$/),item=line.match(/^- (.+)$/);
+  let block;
+  if(item){if(!list){list=node('ul','');target.append(list);}block=node('li','');list.append(block);}
+  else{list=null;block=node(heading?'h3':'p','');target.append(block);}
+  const content=heading?heading[1]:item?item[1].replace(/^\[ \] /,'□ ').replace(/^\[x\] /i,'✓ '):line;
+  // Only create text nodes and HTTPS links; CV and job text can never become HTML.
+  const links=/\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)|(https:\/\/[^\s<>]+)/g;
+  let offset=0;
+  for(const match of content.matchAll(links)){
+   block.append(document.createTextNode(content.slice(offset,match.index)));
+   const href=match[2]||match[3];let safe=false;
+   try{const url=new URL(href);safe=url.protocol==='https:'&&!url.username&&!url.password;}catch{}
+   if(safe){const a=node('a',match[1]||href);a.href=href;a.target='_blank';a.rel='noopener noreferrer';block.append(a);}
+   else block.append(document.createTextNode(match[0]));
+   offset=match.index+match[0].length;
+  }
+  block.append(document.createTextNode(content.slice(offset)));
+ }
 }
 function jobs(){
  if(!current)return;
@@ -374,7 +413,9 @@ function render(){
  node('p',a.readiness?label('readiness',a.readiness):label('stages','needs repair'),'muted'),node('code','python career.py hash '+a.id));return card;
  }));
  if(!current.applications.length)el('applications').append(node('p',t('noApplications'),'muted'));
- el('plan').textContent=current.learning_plan||t('noPlan');
+ renderPlan(el('plan'),current.learning_plan||t('noPlan'));
+ el('plan-suggestion').hidden=!current.learning_plan_suggestion;
+ renderPlan(el('suggested-plan'),current.learning_plan_suggestion||'');
  jobs();
  renderWizard();
  renderSearch();

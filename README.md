@@ -10,6 +10,30 @@ It supports different professions, first jobs, career changes and returning
 after a break. Your answers define the profile and criteria. There is no
 preset profession, salary threshold or “ideal candidate”.
 
+The working cycle is **CV and confirmed preferences → real job leads →
+focused practice → tailored CV → humanization and fact review → your approval**.
+The goal is a useful next step: a job worth reviewing, a practical learning task,
+or an application you can confidently discuss.
+
+Use a separate project folder for each candidate. The reusable code and
+instructions can be shared; the candidate's profile, documents and progress
+stay in that folder's private `local/` directory.
+
+## What works today
+
+| Part | What it does |
+|---|---|
+| Portal | Four-step CV onboarding, saved drafts, job search and results, learning plan, application status, English/Ukrainian interface, light/dark themes. |
+| Search | Fetches configured public feeds and matches locally, including known title synonyms and translations in English, Ukrainian, German, Polish and French. Shows match reasons and unresolved conditions. |
+| Learning | Compares CV evidence and stated skills with current job requirements; proposes up to three topics, practical tasks and checks within the weekly budget. Preserves personal edits. |
+| Codex / Claude Code | Guides decisions, interprets requirements, writes tailored CVs and optional cover letters, performs the mandatory humanization and factual review. |
+| Candidate | Confirms their facts and preferences, reviews the final writing, personally approves the CV and decides whether to submit it. |
+
+The portal and assistant use the same local files. The Python runtime has no
+embedded language model; it does not write a finished tailored CV or submit
+applications. Search and learning use finite local vocabularies, with explicit
+unknowns for the assistant and candidate to resolve.
+
 ## Get started
 
 You need Python 3.10 or newer. The portal and Python tool use only the standard
@@ -28,7 +52,13 @@ learning plan. There is no language model embedded in Python.
    **Your CV → Your next role → Skills & learning → Review & search**.
 4. Review the extracted text and your answers, tick the confirmation box, and
    choose **Confirm & find jobs**. The portal saves your profile, searches the
-   selected public sources and creates a starting learning plan.
+   selected public sources and creates a learning plan from your CV and the
+   requirements of the jobs it finds.
+
+The default address is `http://127.0.0.1:8766/`. To keep the browser closed or
+choose a different local port, use
+`python career.py portal --no-open --port 8766`. Keep the server process running
+while using the portal.
 
 Answers save automatically to `local/onboarding-draft.json`. Reloading resumes
 the saved step. Uploads stay under `local/imports/`; the portal does not send
@@ -123,6 +153,13 @@ Greenhouse or Lever company boards. These cover part of the market. Your
 assistant can add available web research or jobs you found yourself. Sources
 that fail must be reported as failures.
 
+Title matching includes a local vocabulary of synonyms and translations in
+English, Ukrainian, German, Polish and French. For example, `Customer Support`
+can find `Kundensupport` and `Customer Service` titles. Each result explains
+which title matched. Unknown occupations still use the literal title; add
+alternative names to your target roles when the vocabulary does not cover them.
+Related but distinct occupations are not automatically interchangeable.
+
 Check results against the actual description: “remote” does not always mean
 worldwide hiring, and matching words do not establish suitability. Unknown
 salary, work authorization or requirements do not become confirmed matches.
@@ -131,11 +168,23 @@ Use `python career.py import-jobs PATH` to add an external list. The format and
 source capabilities are documented in [docs/SOURCES.md](docs/SOURCES.md); your
 assistant can prepare the file from reviewed descriptions.
 
-The learning plan lives in `local/learning-plan.md`. After the first search,
-your assistant refines it with at most three active topics, concrete exercises,
-outputs and realistic time estimates. The command preserves an existing plan.
-Useful outputs depend on your profession: a written piece, spreadsheet,
-analysis, presentation, case study or project can all count.
+The learning plan lives in `local/learning-plan.md`. It compares your CV and
+confirmed skills with recognized requirements in the found job descriptions,
+then selects up to three priorities within your weekly time budget. Topics
+include CV evidence, quoted job requirements and links, a practical exercise,
+an output, a completion check and a first step. Your chosen learning goals also
+influence the priorities. A skill absent from the CV is **unknown**, not proof
+that you lack it; the plan starts with an assessment in that case.
+
+This runs locally without an AI service. The vocabulary and exercise library
+are finite; unrecognized requirements and unavailable job evidence are reported
+honestly. Your assistant can interpret specialized requirements and refine the
+plan. Training does not become professional experience or a verified qualification.
+
+An untouched generated plan updates after a new portal search or `learn` run.
+Your manual edits and older plans are preserved; the portal shows an updated
+suggestion separately for you and your assistant to review. The supporting
+analysis is saved in `local/learning-plan.json`.
 
 Search runs when invoked. Background monitoring or a schedule needs separate
 setup at your request.
@@ -206,6 +255,8 @@ application history or credentials.
 career-starter/
   AGENTS.md                 shared assistant instructions
   CLAUDE.md                 entry point for Claude Code
+  career.py                 command-line entry point
+  careerkit/                runtime, portal and local workflows
   workflows/                onboarding, search, learning, CV, humanization
   templates/                synthetic examples only
   local/                    your data; never publish
@@ -213,12 +264,22 @@ career-starter/
     imports/                preserved originals and extracted text
     profile-input.json      confirmed criteria
     profile.json            active profile after onboarding
+    onboarding-draft.json   unfinished, unconfirmed portal answers
     master.md               master CV
     evidence.json           confirmed facts
+    jobs.json               search results, source status and match reasons
     applications/           jobs, drafts and reviews
-    learning-plan.md        learning plan
+    learning-plan.md        current plan and personal notes
+    learning-plan.json      generated CV/requirement analysis
+    learning-plan-state.json  hashes and suggested-plan location
+    learning-plan.suggested*.md  proposed updates when the plan has edits
     exports/                finished CVs
 ```
+
+`profile.json` is the active profile; `profile-input.json` is an input to
+assistant-led onboarding. A saved portal draft is not a confirmed profile.
+Generated learning analysis is not proof of skill, and an exported CV is not
+evidence that an application was sent.
 
 Local storage does not mean the AI runs offline. Text your assistant reads is
 processed according to your Codex or Claude Code settings. Public job searches
@@ -235,6 +296,56 @@ Inspect the generated package before sharing. Do not manually ZIP the entire
 workspace: it may already contain personal data. `.gitignore` does not remove
 files previously committed to Git history. Start a clean public copy without
 private history.
+
+## Working in a new assistant session
+
+Open the Career Starter folder itself, read [AGENTS.md](AGENTS.md), and run
+`python career.py status`. Claude Code starts from [CLAUDE.md](CLAUDE.md), which
+points to the same shared rules. Existing files are the continuity between
+sessions; an assistant must inspect the relevant saved state before asking you
+to repeat onboarding or recreating documents.
+
+For an existing candidate, a useful starting request is:
+
+> Read AGENTS.md and check the saved state. Tell me where we stopped and carry
+> out the next useful step. Preserve my CV, application drafts and learning notes.
+
+For development, first check `git status --short` and the relevant diff in this
+repository. Work on the requested feature without running onboarding or searches
+against a real candidate as a test. This project is self-contained; if it is
+inside another workspace, use the Git repository containing `career.py`.
+
+### Code map
+
+Python 3.10+ and the standard library run the whole application. The browser UI
+is HTML/CSS/JavaScript served by Python; there is no Node build or database setup.
+
+| File | Responsibility |
+|---|---|
+| `career.py` | CLI commands and project root; data belongs beside this script, regardless of the shell's working directory. |
+| `careerkit/workspace.py` | Private paths, atomic writes, CV import, profile/evidence validation and onboarding. |
+| `careerkit/onboarding.py` | Portal drafts, uploads, confirmation and background search orchestration. |
+| `careerkit/portal.py` | Local HTTP server, protected routes, dashboard, inline UI and translations. |
+| `careerkit/search.py` | Feed adapters, cache, imports, ranking and source/error reporting. |
+| `careerkit/roles.py` | Curated title aliases, translations and role qualifiers. |
+| `careerkit/learning.py` | CV/requirement analysis, priorities, exercises and preservation of edited plans. |
+| `careerkit/cv.py` | Application preparation, review, version-bound approval, export and event history. |
+| `careerkit/release.py` + `PUBLIC_FILES.json` | Public-content checks and explicit distribution allowlist. |
+| `tests/` | Standard-library unit, integration and CLI journey tests using synthetic data. |
+
+Use `python career.py --help` for supported commands. Run checks appropriate to
+the change; the full suite and public-content check are:
+
+```text
+python -m unittest discover -s tests -v
+python career.py check-public
+```
+
+For a changed portal flow, also exercise it in a separate synthetic workspace.
+Add new distributable files to `PUBLIC_FILES.json`; keep candidate files outside
+that manifest. Keep both READMEs and the relevant workflow instructions aligned
+with behavior. [docs/VERIFICATION.md](docs/VERIFICATION.md) records completed
+checks and limitations, not a guarantee that later changes passed them.
 
 ## If something stops
 

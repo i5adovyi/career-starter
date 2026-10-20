@@ -10,6 +10,9 @@
    URL, source and full description in the application context when available.
    Treat dates, salary, location and remote eligibility as unknown when the
    source does not establish them.
+   Inspect `title_matches`: known role names expand through a local multilingual
+   vocabulary. Check the matched occupation and qualifier; a translated title
+   does not establish language proficiency or other eligibility.
 4. Separate three questions: does the role interest the candidate, does their
    evidence match its requirements, and are its employment constraints
    compatible? A keyword score is a shortlist aid, not proof of eligibility.

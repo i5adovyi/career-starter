@@ -24,7 +24,7 @@ def main() -> int:
     commands.add_parser("search", help="Fetch public vacancies and rank locally.")
     command = commands.add_parser("import-jobs", help="Import jobs found with your assistant.")
     command.add_argument("path", type=Path)
-    commands.add_parser("learn", help="Create a learning plan scaffold; preserve existing work.")
+    commands.add_parser("learn", help="Build a CV- and vacancy-based learning plan; preserve personal edits.")
     commands.add_parser("status", help="Summarize local workspace.")
     for name in ("prepare", "hash", "check", "approve", "export"):
         command = commands.add_parser(name)
@@ -67,6 +67,7 @@ def main() -> int:
             result = state(ROOT)
             result["jobs"] = [{k: j.get(k) for k in ("id", "title", "company", "score", "review_flags")} for j in result["jobs"]]
             result["learning_plan"] = bool(result["learning_plan"])
+            result["learning_plan_suggestion"] = bool(result["learning_plan_suggestion"])
         elif args.command == "prepare":
             result = cv.prepare(ROOT, args.job_id)
         elif args.command == "hash":

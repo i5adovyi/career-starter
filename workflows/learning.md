@@ -3,6 +3,19 @@
 Run `python career.py learn` after onboarding and a useful search. Treat its
 output as a starting point for the assistant and candidate to review.
 
+The local planner compares candidate-provided CV evidence and profile skills
+with recognized requirements from review leads. Read `local/learning-plan.json`
+for requirement excerpts, source jobs, candidate evidence and priority reasoning.
+It supplies practical exercises and completion checks within the weekly budget.
+An unknown skill starts with an assessment; absence from a CV is not a deficit.
+The built-in vocabulary is finite, so inspect specialized or unrecognized
+requirements yourself rather than treating the generated analysis as exhaustive.
+
+Unmodified generated plans are refreshed when their inputs change. Existing
+manual plans and progress notes remain intact; review a separately generated
+`learning-plan.suggested*.md` shown in the portal before merging useful changes.
+Do not copy skill assessments into the CV evidence ledger as verified ability.
+
 Prioritize evidence in this order:
 
 1. A specific interview or work-sample difficulty.

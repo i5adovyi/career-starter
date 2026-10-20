@@ -39,10 +39,17 @@ or submit applications.
 
 ## Matching and uncertainty
 
-Add alternative role names as separate `target_roles` entries. Matching uses
-whole words in the title, so `Customer Support` can match `Junior Customer
-Support Specialist`. It does not infer that `Customer Success` is the same
-occupation. `Account` will not accidentally match `Accountant`.
+Matching uses whole words plus the curated local vocabulary in
+`careerkit/roles.py`: synonyms and translations across English, Ukrainian,
+German, Polish and French. `Customer Support` can match `Customer Service`
+or `Kundensupport`; `Account` will not accidentally match `Accountant`.
+Distinct occupational families and explicit role qualifiers are kept separate.
+Unknown roles retain literal matching. Add other intended names as separate
+`target_roles` entries when the vocabulary does not cover them.
+
+Each accepted title match records its requested role, matched phrase, canonical
+family and whether it was literal or a synonym/translation in `title_matches`.
+The portal explains the expansion; it never rewrites the employer's job title.
 
 Keyword matches increase rank. Excluded terms are strict exclusions anywhere
 in the title or description. An explicit title seniority or work mode outside

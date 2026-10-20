@@ -269,6 +269,21 @@ class PortalOnboardingTests(unittest.TestCase):
         repeated = workspace.learn(self.root)
         self.assertTrue(repeated["preserved"])
         self.assertEqual(plan.read_text(encoding="utf-8"), manual)
+        status, state = self.json_request("GET", "/api/state")
+        self.assertEqual(status, 200)
+        self.assertEqual(state["learning_plan"], manual)
+        self.assertIn("# План навчання", state["learning_plan_suggestion"])
+        self.assertIn("Spreadsheets", state["learning_plan_suggestion"])
+
+    def test_plan_suggestion_state_cannot_expose_other_private_documents(self):
+        self.complete()
+        workspace.write_text(self.root / "local/private-note.md", "Not a learning plan")
+        workspace.write_json(self.root / "local/learning-plan-state.json", {
+            "suggestion_path": "local/private-note.md",
+        })
+        status, state = self.json_request("GET", "/api/state")
+        self.assertEqual(status, 200)
+        self.assertEqual(state["learning_plan_suggestion"], "")
 
     def test_existing_cli_master_evidence_and_profile_are_not_replaced(self):
         self.stop_server()
@@ -294,12 +309,12 @@ class PortalOnboardingTests(unittest.TestCase):
         self.complete()
         entered, release = threading.Event(), threading.Event()
         public_job = {
-            "title": "Customer Support Specialist",
+            "title": "Mitarbeiter Kundensupport",
             "company": "Example Company",
             "url": "https://example.org/jobs/support",
             "location": "Germany",
             "remote": True,
-            "description": "Help customers with billing and spreadsheet reports.",
+            "description": "Requirements: Excel reporting and handling customer billing questions.",
         }
 
         def fetch_source(source):
@@ -336,9 +351,14 @@ class PortalOnboardingTests(unittest.TestCase):
         self.assertEqual(stored["status"], "ok")
         self.assertEqual([job["url"] for job in stored["jobs"]], [public_job["url"]])
         self.assertEqual(state["jobs"][0]["company"], "Example Company")
+        self.assertEqual(state["jobs"][0]["title_matches"][0]["kind"], "synonym_translation")
         plan = (self.root / "local/learning-plan.md").read_text(encoding="utf-8")
         self.assertIn("Spreadsheets", plan)
         self.assertIn("3 hours", plan)
+        self.assertIn(public_job["url"], plan)
+        self.assertEqual(state["learning_plan"], plan)
+        analysis = workspace.read_json(self.root / "local/learning-plan.json")
+        self.assertEqual(analysis["job_sample_count"], 1)
 
     def test_rejected_post_requests_do_not_write_private_files(self):
         before = self.snapshot()
