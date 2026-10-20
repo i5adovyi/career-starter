@@ -12,18 +12,32 @@ preset profession, salary threshold or “ideal candidate”.
 
 ## Get started
 
-You need Python 3.10 or newer and a working Codex or Claude Code setup. The
-Python tool uses only the standard library and needs no separate API key.
-Job-feed searches require internet access.
+You need Python 3.10 or newer. The portal and Python tool use only the standard
+library and need no API key. Job-feed searches require internet access.
+Use Codex or Claude Code later to tailor your CV, review writing and refine
+your learning plan.
 
-Codex or Claude Code conducts onboarding, writes and edits your CV, and refines
-the learning plan. Python commands manage local files, retrieve job listings
-and check preparation stages. There is no language model embedded in Python.
+The portal handles onboarding and job searches. Codex or Claude Code can also
+conduct onboarding conversationally, write and edit your CV, and refine the
+learning plan. There is no language model embedded in Python.
 
 1. Download a clean copy and extract it into its own folder.
-2. Open that folder in Codex or Claude Code.
-3. Attach your CV, provide an accessible file path, or put it in `local/inbox/`.
-4. Ask your assistant:
+2. Run `python career.py portal` from that folder. On Windows you can also open
+   `start.cmd`; on macOS/Linux run `sh start.sh`.
+3. In the browser, upload a CV or paste its text. Complete the four steps:
+   **Your CV → Your next role → Skills & learning → Review & search**.
+4. Review the extracted text and your answers, tick the confirmation box, and
+   choose **Confirm & find jobs**. The portal saves your profile, searches the
+   selected public sources and creates a starting learning plan.
+
+Answers save automatically to `local/onboarding-draft.json`. Reloading resumes
+the saved step. Uploads stay under `local/imports/`; the portal does not send
+your CV to job feeds. If PDF/DOCX extraction fails, the original remains saved
+and you can paste its text. A failed search preserves your profile and can be
+retried using **Find jobs / Search again**.
+
+For guided onboarding or help with the next steps, open the folder in Codex or
+Claude Code and ask:
 
    > Read AGENTS.md and guide me through onboarding. Here is my CV. Ask only
    > what is missing for the search, confirm my facts and criteria with me,
@@ -62,12 +76,19 @@ or write in Ukrainian. The portal's onboarding prompt follows its selected
 language. Choose your conversation and learning-plan language with the assistant;
 confirm the CV language separately for each application.
 
-Onboarding takes place in the assistant chat. The portal currently displays
-progress and instructions; it does not have a CV upload form or onboarding wizard.
+The portal's questions and controls follow its selected language. Choose the
+learning-plan language in step three. Tailored CV language is agreed separately
+with your assistant.
 
 ## Onboarding
 
-Your assistant reads the CV, summarizes the facts and asks a few questions:
+The portal asks about your target roles, locations, work arrangement, languages,
+skills, preferences and available learning time. It shows the text and answers
+for your confirmation before creating a profile. It does not infer your skills
+or achievements from a vacancy or independently verify your CV claims.
+
+If you prefer conversational onboarding, your assistant reads the CV,
+summarizes the facts and asks a few questions:
 what work to look for, where and in which working arrangement, working languages,
 important conditions, and realistic weekly learning time. If your direction is
 unclear, it helps compare options against your experience and actual vacancies.
@@ -76,8 +97,9 @@ You do not need to explain a career break or share family or other sensitive
 details. You decide whether to include them. Unknown information stays unknown;
 the assistant must not invent experience, tools, achievements or language levels.
 
-After you confirm the facts, the assistant creates your private profile, master
-CV and evidence ledger. The technical command is:
+After confirmation, the portal creates your private profile, master CV and
+evidence ledger. An assistant-led workflow can create the same artifacts and
+use this command:
 
 ```text
 python career.py onboard --profile local/profile-input.json

@@ -12,6 +12,13 @@ Read `README.md`, run `python career.py status`, and inspect existing files in
 `local/` before creating anything. If the workspace is new, run
 `python career.py init`, then follow `workflows/onboarding.md`.
 
+Candidates can also complete onboarding in the portal: upload or paste a CV,
+answer four steps, confirm their text and preferences, then start a search.
+Inspect the existing profile and evidence before asking questions again.
+`local/onboarding-draft.json` is unconfirmed work; only the completed profile
+and evidence are candidate-confirmed. Portal evidence records candidate-provided
+claims, not independent verification or a humanisation review.
+
 When the user says “start”, “help me find a job”, or an equivalent, carry out the
 workflow. Do not give them a long setup questionnaire or stop after a plan.
 Start in English unless the candidate requests another language or writes in

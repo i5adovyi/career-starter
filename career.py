@@ -36,7 +36,7 @@ def main() -> int:
     command.add_argument("job_id")
     command.add_argument("value", choices=sorted(cv.STAGES))
     command.add_argument("--note", default="")
-    command = commands.add_parser("portal", help="Open the read-only localhost dashboard.")
+    command = commands.add_parser("portal", help="Open local CV onboarding, job search and dashboard.")
     command.add_argument("--port", type=int, default=8766)
     command.add_argument("--no-open", action="store_true")
     commands.add_parser("check-public", help="Audit the explicit public package manifest.")

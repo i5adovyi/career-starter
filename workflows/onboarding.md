@@ -8,6 +8,16 @@ The first useful outcome is a confirmed profile,
 a private master CV, a small set of real job matches and a feasible learning
 plan. Do not require a perfect CV or a long questionnaire before helping.
 
+## Portal option
+
+`python career.py portal` opens a four-step upload/paste, preferences, learning
+and confirmation flow. Answers autosave in `local/onboarding-draft.json`.
+The candidate reviews the extracted CV text before confirming; completion
+creates `master.md`, `evidence.json` and `profile.json` and can start a search.
+If this is already complete, read those artifacts and continue from the saved
+state. Do not replace them or treat candidate confirmation as independent
+fact verification. A saved draft alone is not a confirmed profile.
+
 ## 1. Inspect and import
 
 Run `python career.py init` if needed. Ask the candidate to place their existing

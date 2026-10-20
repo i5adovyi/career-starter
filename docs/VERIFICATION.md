@@ -9,7 +9,7 @@ and uses the standard library. macOS and Linux were not executed in this check.
 python -m unittest discover -s tests -v
 ```
 
-47 tests: 46 passed, one skipped because this Windows environment cannot create
+57 tests: 56 passed, one skipped because this Windows environment cannot create
 symbolic links. The suite includes:
 
 - Synthetic CV import, confirmed onboarding, job import and learning-plan creation.
@@ -27,9 +27,36 @@ symbolic links. The suite includes:
   without misreporting a fresh network search.
 - Actionable errors for invalid DOCX and preservation of inputs when PDF
   extraction times out or yields no text.
+- Portal upload, resumable drafts, explicit confirmation, preserved originals
+  and existing CLI artifacts, stale-draft rejection and repeated completion.
+- Origin/CSRF/body-limit checks on write routes and background search persistence.
+- Ukrainian learning-plan generation and preservation of manual plan edits.
 
 The first sandboxed test run could not connect to a loopback socket. The full
 suite passed with permission to use the local socket. No check was weakened.
+
+## Portal onboarding
+
+A separate synthetic workspace was exercised through the actual browser UI:
+upload DOCX, review extracted text, enter roles and location, reload and resume
+the saved second step, enter skills and learning preferences, review the summary,
+reject completion without confirmation, then confirm and search.
+
+The real search fetched 300 Arbeitnow and 10 Remotive records and displayed
+18 review leads. A Ukrainian starting learning plan was created from the
+selected topic and three-hour weekly budget. No candidate CV was sent to the
+sources. The user's workspace was kept separate from this synthetic check.
+
+Targeted JavaScript checks also verified that a refresh after a mutation waits
+for any older read and fetches fresh state, and that saving form answers preserves
+custom Greenhouse/Lever sources not represented by the two feed checkboxes.
+After a server restart, the browser restored the completed dashboard; a repeated
+search used the cache and retained the active vacancy filter.
+
+The portal records candidate-confirmed CV lines as evidence; it does not
+independently verify those claims or perform a humanisation review. PDF extraction
+still depends on `pdftotext`; if extraction fails or the file is scanned, the
+original is preserved and the form offers manual text entry.
 
 ## Download-to-use verification
 
@@ -92,9 +119,10 @@ not a complete accessibility audit.
 
 ## Product boundaries
 
-This is an assistant-led working version. Codex or Claude Code must conduct the
-conversation, interpret evidence, write the tailored CV, perform the semantic
-humanisation review and refine the learning plan. The Python `learn` command
+The portal conducts upload, preferences, confirmation and search without an
+embedded AI model. Codex or Claude Code can provide conversational guidance,
+interpret evidence, write the tailored CV, perform the semantic humanisation
+review and refine the learning plan. The Python `learn` command
 creates a scaffold; it does not produce a complete personalized curriculum.
 The review gate checks recorded coverage and freshness; it cannot evaluate
 writing quality. There is no background search scheduler or automatic submission.
