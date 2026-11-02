@@ -1,4 +1,5 @@
 [
+  ".github/workflows/ci.yml",
   ".gitignore",
   "AGENTS.md",
   "CLAUDE.md",
@@ -17,6 +18,7 @@
   "careerkit/workspace.py",
   "docs/SOURCES.md",
   "docs/VERIFICATION.md",
+  "docs/demo/portal.png",
   "start.cmd",
   "start.sh",
   "templates/application.md",

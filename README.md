@@ -1,10 +1,26 @@
 # Career Starter
 
-**English** · [Українська](README.uk.md)
+**English** · [Українська](README.uk.md) · [![CI](https://github.com/i5adovyi/career-starter/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/i5adovyi/career-starter/actions/workflows/ci.yml)
 
 A local job-search workspace for use with Codex or Claude Code. Add your CV,
 complete a short onboarding conversation, and get job leads, a learning plan
 and tailored CVs with a mandatory natural-language review.
+
+## Demo with a fictional CV
+
+> “Used SQL queries to compare order totals with payment records.” — Ellen Example
+
+Ellen is looking for a QA Engineer role in Poland. We imported two fictional
+vacancies. The portal picked up both the exact title and *Software Tester* as a
+related title. Each card shows why it matched and which hiring conditions still need checking.
+
+![Two sample job cards show the title, SQL and location matches for QA Engineer and Software Tester.](docs/demo/portal.png)
+
+Both postings ask for SQL and one also asks for Python. With three hours a week,
+Ellen's plan gives her 90 minutes to test a SQL join against hand-calculated totals
+and 90 minutes to try a Python exercise. [Try it with your own CV](#get-started).
+
+## What works today
 
 It supports different professions, first jobs, career changes and returning
 after a break. Your answers define the profile and criteria. There is no
@@ -18,8 +34,6 @@ or an application you can confidently discuss.
 Use a separate project folder for each candidate. The reusable code and
 instructions can be shared; the candidate's profile, documents and progress
 stay in that folder's private `local/` directory.
-
-## What works today
 
 | Part | What it does |
 |---|---|

@@ -95,6 +95,30 @@ class JourneyTests(unittest.TestCase):
         self.assertEqual(state["stage"], "applied")
         self.assertEqual(portal.state(self.root)["applications"][0]["readiness"], "Approved for export")
 
+    def test_equivalent_workspace_root_returns_usable_relative_paths(self):
+        self.root = self.root / "local" / ".."
+        with self.subTest(operation="import"):
+            imported = workspace.import_cv(self.root, self.root / "sample.txt")["folder"]
+            self.assertTrue(imported.startswith("local/imports/"))
+            self.assertEqual((self.root / imported / "cv.txt").read_text(encoding="utf-8"), self.master)
+        with self.subTest(operation="prepare"):
+            prepared = cv.prepare(self.root, self.job_id)
+            self.assertEqual(prepared["folder"], f"local/applications/{self.job_id}")
+            self.assertEqual(prepared["created"], [])
+        with self.subTest(operation="learn"):
+            plan = self.root / "local/learning-plan.md"
+            workspace.write_text(plan, "Personal practice notes")
+            result = workspace.learn(self.root)
+            self.assertEqual(result["suggestion_path"], "local/learning-plan.suggested.md")
+            self.assertIn("Spreadsheets", (self.root / result["suggestion_path"]).read_text(encoding="utf-8"))
+            self.assertEqual(plan.read_text(encoding="utf-8"), "Personal practice notes")
+        with self.subTest(operation="export"):
+            self.record_review()
+            self.approval()
+            exported = cv.export(self.root, self.job_id)["exported"]
+            self.assertTrue(exported.startswith(f"local/exports/{self.job_id}-"))
+            self.assertEqual((self.root / exported / "CV.md").read_text(encoding="utf-8"), self.master)
+
     def test_any_input_edit_invalidates_review_and_approval(self):
         self.record_review()
         self.approval()
