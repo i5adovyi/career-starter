@@ -11,9 +11,12 @@ import zipfile
 
 
 MANIFEST = "PUBLIC_FILES.json"
-ROOT_FILES = {
+DEMO_IMAGE = "docs/demo/portal.png"
+# Only the visually reviewed, synthetic screenshot may bypass the UTF-8 scan.
+DEMO_SHA256 = "e70560ddcfdf3da94e5c9fcf8c1b0b8211c736adc3c4873cf98fd9099a394123"
+EXACT_PATHS = {
     MANIFEST, "career.py", "README.md", "README.uk.md", "AGENTS.md", "CLAUDE.md", ".gitignore",
-    "start.cmd", "start.sh", "LICENSE",
+    "start.cmd", "start.sh", "LICENSE", ".github/workflows/ci.yml", DEMO_IMAGE,
 }
 SOURCE_DIRS = {
     "careerkit": {".py"},
@@ -85,7 +88,7 @@ def _eligible(path: str) -> bool:
         return False
     if any(part in {".", ".."} or part in IGNORED_DIRS for part in relative.parts):
         return False
-    if path in ROOT_FILES:
+    if path in EXACT_PATHS:
         return True
     return (
         len(relative.parts) >= 2
@@ -170,12 +173,17 @@ def _inspect(root: Path) -> tuple[dict[str, bytes], list[str]]:
                 continue
             try:
                 content = path.read_bytes()
-                text = content.decode("utf-8")
-            except (OSError, UnicodeError):
+                if relative != DEMO_IMAGE:
+                    issues.extend(_scan_text(content.decode("utf-8"), relative, tokens))
+                elif hashlib.sha256(content).hexdigest() != DEMO_SHA256:
+                    issues.append(f"{relative}: image differs from the reviewed demo screenshot.")
+            except OSError:
+                issues.append(f"{relative}: public source could not be read.")
+                continue
+            except UnicodeError:
                 issues.append(f"{relative}: public source must be readable UTF-8 text.")
                 continue
             contents[relative] = content
-            issues.extend(_scan_text(text, relative, tokens))
             if any(token in relative.casefold() for token in tokens):
                 issues.append("A public filename contains a private identity token.")
     for missing in sorted(listed - found):

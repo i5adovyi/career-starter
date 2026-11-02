@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 import zipfile
 
-from careerkit.release import MANIFEST, check_public, package_public
+from careerkit.release import DEMO_IMAGE, MANIFEST, check_public, package_public
 
 
 class PublicReleaseTests(unittest.TestCase):
@@ -58,9 +58,33 @@ class PublicReleaseTests(unittest.TestCase):
             package_public(self.root, output)
         self.assertFalse(output.exists())
 
+    def test_package_accepts_only_the_reviewed_demo_image(self):
+        reviewed = (Path(__file__).resolve().parents[1] / DEMO_IMAGE).read_bytes()
+        image = self.root / DEMO_IMAGE
+        image.parent.mkdir(parents=True)
+        image.write_bytes(reviewed)
+        self.entries.append(DEMO_IMAGE)
+        self.manifest()
+
+        archive_path = package_public(self.root, self.root / "dist" / "demo.zip")
+        with zipfile.ZipFile(archive_path) as archive:
+            self.assertEqual(archive.read(DEMO_IMAGE), reviewed)
+
+        image.write_bytes(reviewed + b"extra data")
+        with self.assertRaisesRegex(ValueError, "differs from the reviewed demo screenshot"):
+            package_public(self.root, self.root / "dist" / "changed.zip")
+
+    def test_ci_workflow_receives_the_public_text_scan(self):
+        workflow = ".github/workflows/ci.yml"
+        self.write(workflow, "# " + "candidate" + "@" + "real-mail.org")
+        self.entries.append(workflow)
+        self.manifest()
+        self.assertEqual(check_public(self.root), [f"{workflow}: non-example email address."])
+
     def test_manifest_rejects_runtime_paths_traversal_and_binary_files(self):
         for entry in ("local/profile.json", "../private.md", "/outside.md",
-                      "docs\\notes.md", "docs/./notes.md", "templates/cv.pdf"):
+                      "docs\\notes.md", "docs/./notes.md", "templates/cv.pdf",
+                      "docs/demo/other.png", ".github/workflows/other.yml"):
             with self.subTest(entry=entry):
                 self.entries = [MANIFEST, "career.py", "README.md", entry]
                 self.manifest()
