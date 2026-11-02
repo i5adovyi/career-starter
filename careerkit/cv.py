@@ -34,6 +34,7 @@ def folder(root: Path, job_id: str) -> Path:
 
 
 def prepare(root: Path, job_id: str) -> dict:
+    root = root.resolve()
     destination = folder(root, job_id)
     master = private(root, "master.md")
     evidence(root)
@@ -213,6 +214,7 @@ def render_cv(text: str) -> str:
 
 
 def export(root: Path, job_id: str) -> dict:
+    root = root.resolve()
     current = check(root, job_id)
     application = folder(root, job_id)
     content = (application / "CV.md").read_bytes()

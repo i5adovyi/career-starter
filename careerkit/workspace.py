@@ -70,6 +70,7 @@ def init(root: Path) -> dict:
 
 
 def import_cv(root: Path, source: Path) -> dict:
+    root = root.resolve()
     init(root)
     source = source.expanduser().resolve()
     if not source.is_file():

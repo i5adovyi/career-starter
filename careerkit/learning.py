@@ -402,6 +402,7 @@ def _markdown(report: dict) -> str:
 
 def generate(root: Path) -> dict:
     """Refresh only unchanged generated output; preserve any candidate edits."""
+    root = root.resolve()
     report = _analysis(root)
     content = _markdown(report)
     content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
