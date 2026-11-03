@@ -18,7 +18,8 @@ DEMO_IMAGE = "docs/demo/portal.png"
 DEMO_SHA256 = "e70560ddcfdf3da94e5c9fcf8c1b0b8211c736adc3c4873cf98fd9099a394123"
 EXACT_PATHS = {
     MANIFEST, "career.py", "README.md", "README.uk.md", "AGENTS.md", "CLAUDE.md", ".gitignore",
-    "start.cmd", "start.sh", "LICENSE", ".github/workflows/ci.yml", DEMO_IMAGE,
+    "start.cmd", "start.sh", "LICENSE", ".github/workflows/ci.yml", ".github/workflows/pages.yml",
+    DEMO_IMAGE, "demo/app.js", "demo/index.html", "demo/styles.css",
 }
 SOURCE_DIRS = {
     "careerkit": {".py"},

@@ -74,17 +74,21 @@ class PublicReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "differs from the reviewed demo screenshot"):
             package_public(self.root, self.root / "dist" / "changed.zip")
 
-    def test_ci_workflow_receives_the_public_text_scan(self):
-        workflow = ".github/workflows/ci.yml"
-        self.write(workflow, "# " + "candidate" + "@" + "real-mail.org")
-        self.entries.append(workflow)
-        self.manifest()
-        self.assertEqual(check_public(self.root), [f"{workflow}: non-example email address."])
+    def test_workflows_and_demo_assets_receive_the_public_text_scan(self):
+        for name in (".github/workflows/ci.yml", ".github/workflows/pages.yml",
+                     "demo/index.html", "demo/styles.css", "demo/app.js"):
+            with self.subTest(name=name):
+                file = self.write(name, "candidate" + "@" + "real-mail.org")
+                self.entries.append(name)
+                self.manifest()
+                self.assertEqual(check_public(self.root), [f"{name}: non-example email address."])
+                file.write_text("Public fixture", encoding="utf-8")
 
     def test_manifest_rejects_runtime_paths_traversal_and_binary_files(self):
         for entry in ("local/profile.json", "../private.md", "/outside.md",
                       "docs\\notes.md", "docs/./notes.md", "templates/cv.pdf",
-                      "docs/demo/other.png", ".github/workflows/other.yml"):
+                      "docs/demo/other.png", "demo/cv.html", "demo/private.js",
+                      ".github/workflows/other.yml"):
             with self.subTest(entry=entry):
                 self.entries = [MANIFEST, "career.py", "README.md", entry]
                 self.manifest()

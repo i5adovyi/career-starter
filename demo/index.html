@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore two fictional job matches and a weekly practice plan for Ellen Example in Career Starter.">
+  <title>Ellen’s job shortlist · Career Starter</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23203d32'/%3E%3Cpath d='M8 22h16M8 16h12M8 10h8' fill='none' stroke='%23e9edba' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main" data-copy="skip">Skip to content</a>
+  <header class="mast">
+    <div class="shell mast-inner">
+      <a class="brand" href="#main" aria-label="Career Starter">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        Career Starter
+      </a>
+      <div class="languages" role="group" aria-label="Language / Мова">
+        <button type="button" id="language-en" aria-label="English" lang="en" aria-pressed="true">EN</button>
+        <button type="button" id="language-uk" aria-label="Українська" lang="uk" aria-pressed="false">УК</button>
+      </div>
+    </div>
+  </header>
+  <main class="shell" id="main">
+    <section class="intro" aria-labelledby="title">
+      <div class="intro-copy">
+        <p class="eyebrow" data-copy="caseLabel">Interactive case study</p>
+        <h1 id="title" data-copy="title">Ellen’s job shortlist</h1>
+        <p class="lede" data-copy="lead">How does one line in a CV lead to two jobs worth reviewing and a plan for the week? Explore Ellen’s fictional case.</p>
+        <nav class="index" aria-label="Sections / Розділи">
+          <a href="#matches"><span>01</span><b data-copy="navMatches">Job matches</b> ↓</a>
+          <a href="#plan"><span>02</span><b data-copy="navPlan">Weekly plan</b> ↓</a>
+        </nav>
+      </div>
+      <article class="profile">
+        <div class="profile-top"><span class="eyebrow" data-copy="profileLabel">Candidate brief</span><span class="monogram" aria-hidden="true">EE</span></div>
+        <h2 data-copy="name">Ellen Example</h2>
+        <p class="profile-role" data-copy="target">Seeking a QA Engineer role in Poland</p>
+        <blockquote data-copy="quote">“Used SQL queries to compare order totals with payment records.”</blockquote>
+        <p class="source" data-copy="quoteSource">From Ellen’s fictional CV</p>
+      </article>
+    </section>
+    <noscript>This interactive case uses JavaScript. <a href="https://github.com/i5adovyi/career-starter#demo-with-a-fictional-cv">Read Ellen’s example on GitHub.</a></noscript>
+    <section id="matches" class="section" aria-labelledby="matches-title">
+      <div class="section-head">
+        <span class="chapter" aria-hidden="true">01</span>
+        <div><h2 id="matches-title" data-copy="matchesTitle">Review the job matches</h2>
+          <p data-copy="matchesLead">Choose a posting to see the evidence and the questions Ellen still needs to ask.</p></div>
+      </div>
+      <div class="workspace">
+        <div class="choices" role="group" aria-labelledby="matches-title">
+          <button id="job-qa" class="choice" type="button" aria-controls="match-detail" aria-pressed="true">
+            <span class="small-label">Example Shop</span><strong>QA Engineer</strong><span class="choice-meta" data-copy="qaCity">Warsaw, Poland</span><span class="arrow" aria-hidden="true">↗</span>
+          </button>
+          <button id="job-tester" class="choice" type="button" aria-controls="match-detail" aria-pressed="false">
+            <span class="small-label">Example Studio</span><strong>Software Tester</strong><span class="choice-meta" data-copy="testerCity">Poland</span><span class="arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <article id="match-detail" class="detail" aria-live="polite" aria-atomic="true">
+          <p class="eyebrow" id="match-kind"></p><h3 id="match-title"></h3>
+          <p class="byline" id="match-company"></p>
+          <h4 data-copy="matchReason">Why it surfaced</h4><p id="match-reason"></p>
+          <h4 data-copy="cvEvidence">What the CV supports</h4><p id="match-evidence"></p>
+          <div class="question"><h4 data-copy="toVerify">Still to confirm</h4><p id="match-open"></p></div>
+          <a id="view-plan" href="#plan" class="text-link"></a>
+        </article>
+      </div>
+    </section>
+    <section id="plan" class="section" aria-labelledby="plan-title">
+      <div class="section-head">
+        <span class="chapter" aria-hidden="true">02</span>
+        <div><h2 id="plan-title" data-copy="planTitle">Plan the practice week</h2>
+          <p data-copy="planLead">Ellen has three hours this week. Each 90-minute session turns a job requirement into something she can check.</p></div>
+      </div>
+      <div class="workspace">
+        <div class="choices" role="group" aria-labelledby="plan-title">
+          <button id="practice-sql" class="choice" type="button" aria-controls="practice-detail" aria-pressed="true">
+            <span class="small-label" data-copy="sessionOne">Session 01 · 90 min</span><strong>SQL</strong><span class="choice-meta" data-copy="sqlSummary">Reconcile order totals</span><span class="arrow" aria-hidden="true">↗</span>
+          </button>
+          <button id="practice-python" class="choice" type="button" aria-controls="practice-detail" aria-pressed="false">
+            <span class="small-label" data-copy="sessionTwo">Session 02 · 90 min</span><strong>Python</strong><span class="choice-meta" data-copy="pythonSummary">Check payment records</span><span class="arrow" aria-hidden="true">↗</span>
+          </button>
+        </div>
+        <article id="practice-detail" class="detail practice" aria-live="polite" aria-atomic="true">
+          <p class="eyebrow" id="practice-kind"></p><h3 id="practice-title"></h3>
+          <p class="byline" id="practice-origin"></p>
+          <h4 data-copy="assignment">Assignment</h4><p id="practice-task"></p>
+          <h4 data-copy="output">What to keep</h4><p id="practice-output"></p>
+          <div class="check"><h4 data-copy="check">Check your work</h4><p id="practice-check"></p></div>
+        </article>
+      </div>
+    </section>
+    <footer class="setup">
+      <div><p class="eyebrow" data-copy="nextLabel">Your own workspace</p>
+        <h2 data-copy="nextTitle">Try it with your own CV</h2>
+        <p data-copy="nextBody">Run Career Starter on your computer to import a CV, search for jobs and save a personal learning plan.</p>
+      </div>
+      <a class="cta" id="setup-link" href="https://github.com/i5adovyi/career-starter#get-started"><span data-copy="setupLink">Local setup on GitHub</span> ↗</a>
+    </footer>
+  </main>
+</body>
+</html>

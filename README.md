@@ -8,6 +8,8 @@ and tailored CVs with a mandatory natural-language review.
 
 ## Demo with a fictional CV
 
+**[Try Ellen’s interactive demo](https://i5adovyi.github.io/career-starter/)**. Compare two job matches, see which conditions Ellen still needs to check, and explore how she spends three hours practising SQL and Python. No sign-in or CV upload is required. To work with your own CV, [run the portal locally](#get-started).
+
 > “Used SQL queries to compare order totals with payment records.” — Ellen Example
 
 Ellen is looking for a QA Engineer role in Poland. We imported two fictional

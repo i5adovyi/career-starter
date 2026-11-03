@@ -1,5 +1,6 @@
 [
   ".github/workflows/ci.yml",
+  ".github/workflows/pages.yml",
   ".gitignore",
   "AGENTS.md",
   "CLAUDE.md",
@@ -16,6 +17,9 @@
   "careerkit/roles.py",
   "careerkit/search.py",
   "careerkit/workspace.py",
+  "demo/app.js",
+  "demo/index.html",
+  "demo/styles.css",
   "docs/SOURCES.md",
   "docs/VERIFICATION.md",
   "docs/demo/portal.png",
