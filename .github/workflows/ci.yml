@@ -17,6 +17,8 @@ jobs:
           - os: ubuntu-22.04
             python: "3.10"
           - os: windows-2025
+            python: "3.10"
+          - os: windows-2025
             python: "3.12"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

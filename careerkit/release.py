@@ -9,6 +9,8 @@ from pathlib import Path, PurePosixPath
 import re
 import zipfile
 
+from .workspace import is_link_or_junction
+
 
 MANIFEST = "PUBLIC_FILES.json"
 DEMO_IMAGE = "docs/demo/portal.png"
@@ -75,11 +77,6 @@ def _private_tokens() -> tuple[list[str], list[str]]:
     return [token.casefold() for token in tokens], []
 
 
-def _is_link(path: Path) -> bool:
-    # Windows junctions must not let a public tree reach into another directory.
-    return path.is_symlink() or bool(getattr(path, "is_junction", lambda: False)())
-
-
 def _eligible(path: str) -> bool:
     if not path or "\\" in path or ":" in path:
         return False
@@ -100,7 +97,7 @@ def _eligible(path: str) -> bool:
 
 def _manifest(root: Path) -> tuple[list[str], list[str]]:
     path = root / MANIFEST
-    if _is_link(path):
+    if is_link_or_junction(path):
         return [], [f"{MANIFEST}: symbolic links are not public source files."]
     try:
         entries = json.loads(path.read_text(encoding="utf-8"))
@@ -134,7 +131,7 @@ def _scan_text(text: str, label: str, tokens: list[str]) -> list[str]:
 
 def _inspect(root: Path) -> tuple[dict[str, bytes], list[str]]:
     """Read verified bytes once, so packaging uses the content that was audited."""
-    if _is_link(root) or not root.is_dir():
+    if is_link_or_junction(root) or not root.is_dir():
         return {}, ["Public root must be an existing directory, not a symbolic link."]
     root = root.resolve()
     entries, issues = _manifest(root)
@@ -154,7 +151,7 @@ def _inspect(root: Path) -> tuple[dict[str, bytes], list[str]]:
         for name in sorted(dirs):
             child = base / name
             relative = child.relative_to(root).as_posix()
-            if _is_link(child):
+            if is_link_or_junction(child):
                 issues.append(f"{relative}: symbolic links are not allowed.")
             elif name not in IGNORED_DIRS:
                 safe_dirs.append(name)
@@ -162,7 +159,7 @@ def _inspect(root: Path) -> tuple[dict[str, bytes], list[str]]:
         for name in sorted(files):
             path = base / name
             relative = path.relative_to(root).as_posix()
-            if _is_link(path):
+            if is_link_or_junction(path):
                 issues.append(f"{relative}: symbolic links are not allowed.")
                 continue
             if name in IGNORED_FILES or path.suffix in {".pyc", ".pyo"}:

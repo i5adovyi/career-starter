@@ -7,6 +7,7 @@ import json
 import math
 import os
 import shutil
+import stat
 import subprocess
 import tempfile
 import uuid
@@ -45,6 +46,17 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def is_link_or_junction(path: Path) -> bool:
+    """Detect symlinks and Windows directory junctions on Python 3.10+."""
+    try:
+        info = path.lstat()
+    except (FileNotFoundError, NotADirectoryError):
+        return False
+    return stat.S_ISLNK(info.st_mode) or (
+        os.name == "nt" and info.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT
+    )
+
+
 def private(root: Path, relative: str = "") -> Path:
     """Reject links that could redirect private writes outside this workspace."""
     base = root.resolve() / "local"
@@ -54,7 +66,7 @@ def private(root: Path, relative: str = "") -> Path:
     for item in [candidate, *candidate.parents]:
         if item == root.resolve():
             break
-        if item.is_symlink() or bool(getattr(item, "is_junction", lambda: False)()):
+        if is_link_or_junction(item):
             raise ValueError("Symlinks are not allowed in the private workspace.")
     return candidate
 

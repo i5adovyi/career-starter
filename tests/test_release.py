@@ -166,13 +166,15 @@ class PublicReleaseTests(unittest.TestCase):
 
     def test_symlink_to_private_content_is_refused(self):
         target = self.write("local/private.md", "private material")
-        linked = self.root / "docs" / "linked.md"
-        linked.parent.mkdir()
-        try:
-            linked.symlink_to(target)
-        except OSError:
-            self.skipTest("Creating symbolic links is unavailable in this environment.")
-        self.entries.append("docs/linked.md")
+        docs = self.root / "docs"
+        if os.name == "nt":
+            # Directory junctions work for ordinary Windows accounts on 3.10+.
+            import _winapi
+            _winapi.CreateJunction(str(target.parent), str(docs))
+        else:
+            docs.mkdir()
+            (docs / "private.md").symlink_to(target)
+        self.entries.append("docs/private.md")
         self.manifest()
         self.assertTrue(any("symbolic links are not allowed" in issue
                             for issue in check_public(self.root)))
